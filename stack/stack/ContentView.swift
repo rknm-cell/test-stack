@@ -8,14 +8,17 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var appState = AppState()
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        if appState.isAuthenticated {
+            HomeView()
+                .environmentObject(appState)
+        } else {
+            WelcomeView()
+                .environmentObject(appState)
         }
-        .padding()
+        
     }
 }
 
