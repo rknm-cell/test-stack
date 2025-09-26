@@ -14,6 +14,7 @@ struct HomeView: View {
     @State private var showingPlayLog = false
     @State private var showingDiscoveryFeed = false
     @State private var showingPlayHistory = false
+    @State private var showingCommunity = false
     
     var body: some View {
         NavigationView{
@@ -132,6 +133,21 @@ struct HomeView: View {
                             .background(Color.purple)
                             .cornerRadius(12)
                         }
+                        
+                        Button(action: {
+                            showingCommunity = true
+                        }){
+                            HStack {
+                                Image(systemName: "person.3")
+                                Text("Community")
+                            }
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.orange)
+                            .cornerRadius(12)
+                        }
                     }
                 }
                 .padding(.horizontal)
@@ -161,6 +177,9 @@ struct HomeView: View {
             .sheet(isPresented: $showingPlayHistory) {
                 PlayHistoryView()
                     .environmentObject(appState)
+            }
+            .sheet(isPresented: $showingCommunity) {
+                CommunityView()
             }
         }
     }
