@@ -12,6 +12,7 @@ import Foundation
 struct HomeView: View {
     @EnvironmentObject var appState: AppState
     @State private var showingPlayLog = false
+    @State private var showingDiscoveryFeed = false
     
     var body: some View {
         NavigationView{
@@ -70,8 +71,7 @@ struct HomeView: View {
                 // Show discovery feed button if user has logged play
                 if appState.hasLoggedPlay {
                     Button(action: {
-                        // TODO: Navigate to discovery feed
-                        print("Navigate to discovery feed")
+                        showingDiscoveryFeed = true
                     }){
                         HStack {
                             Image(systemName: "sparkles")
@@ -105,6 +105,9 @@ struct HomeView: View {
             .sheet(isPresented: $showingPlayLog) {
                 PlayLogView()
                     .environmentObject(appState)
+            }
+            .sheet(isPresented: $showingDiscoveryFeed) {
+                DiscoveryFeedView()
             }
         }
     }
