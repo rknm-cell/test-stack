@@ -6,10 +6,11 @@
 //
 
 import SwiftUI
+import Combine
+import Foundation
 
 struct ContentView: View {
     @StateObject private var appState = AppState()
-    
     var body: some View {
         if appState.isAuthenticated {
             HomeView()
