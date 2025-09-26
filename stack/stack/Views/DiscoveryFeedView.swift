@@ -283,5 +283,4 @@ struct FeedItemCard: View {
 #Preview {
     DiscoveryFeedView()
 }
-```
 
