@@ -156,7 +156,7 @@ struct HomeView: View {
                     .environmentObject(appState)
             }
             .sheet(isPresented: $showingDiscoveryFeed) {
-                DiscoveryFeedView()
+                AdvancedDiscoveryFeedView()
             }
             .sheet(isPresented: $showingPlayHistory) {
                 PlayHistoryView()
