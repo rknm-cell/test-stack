@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 import Foundation
+import AuthenticationServices
 
 struct WelcomeView: View {
     @EnvironmentObject var appState: AppState
@@ -32,24 +33,58 @@ struct WelcomeView: View {
             
             Spacer()
             
-            // Sign In Button
-            Button(action: {
-                // Create a mock user for learning purposes
-                let mockUser = User(
-                    id: "user_123",
-                    name: "Play Enthusiast",
-                    email: "user@noomastack.com"
+            // Sign In Options
+            VStack(spacing: 16) {
+                // Apple Sign In Button
+                SignInWithAppleButton(
+                    onRequest: { request in
+                        request.requestedScopes = [.fullName, .email]
+                    },
+                    onCompletion: { result in
+                        switch result {
+                        case .success(let authorization):
+                            if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
+                                let userID = appleIDCredential.user
+                                let email = appleIDCredential.email
+                                let fullName = appleIDCredential.fullName
+                                
+                                let name = [fullName?.givenName, fullName?.familyName]
+                                    .compactMap { $0 }
+                                    .joined(separator: " ")
+                                
+                                let user = User(
+                                    id: userID,
+                                    name: name.isEmpty ? "Apple User" : name,
+                                    email: email ?? "no-email@privaterelay.appleid.com"
+                                )
+                                
+                                appState.currentUser = user
+                                appState.isAuthenticated = true
+                            }
+                        case .failure(let error):
+                            appState.errorMessage = "Sign in failed: \(error.localizedDescription)"
+                        }
+                    }
                 )
-                appState.currentUser = mockUser
-                appState.isAuthenticated = true
-            }) {
-                Text("Get Started")
+                .signInWithAppleButtonStyle(.black)
+                .frame(height: 50)
+                .cornerRadius(8)
+                
+                // Mock Sign In Button (for development)
+                Button(action: {
+                    appState.signInWithMock()
+                }) {
+                    HStack {
+                        Image(systemName: "person.circle.fill")
+                        Text("Continue as Guest (Development)")
+                    }
                     .font(.headline)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.blue)
-                    .cornerRadius(12)
+                    .background(Color.gray)
+                    .cornerRadius(8)
+                }
             }
             .padding(.horizontal)
             
@@ -58,6 +93,9 @@ struct WelcomeView: View {
                 Text(errorMessage)
                     .foregroundColor(.red)
                     .padding()
+                    .background(Color.red.opacity(0.1))
+                    .cornerRadius(8)
+                    .padding(.horizontal)
             }
         }
         .padding()

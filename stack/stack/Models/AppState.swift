@@ -12,48 +12,88 @@ class AppState: ObservableObject {
     @Published var isAuthenticated = false
     @Published var currentUser: User?
     @Published var errorMessage: String?
-    @Published var playEntries: [PlayEntry] = []
     
-    // MARK: - Authentication
-    func signIn(){
-        let mockUser = User(
-            id: "user_123",
-            name: "Play Enthusiast",
-            email: "user@example.com"
-        )
-        isAuthenticated = true
-        currentUser = mockUser
-        errorMessage = nil
+    // Services
+    private let authenticationService = AuthenticationService()
+    private let dataPersistenceService = DataPersistenceService()
+    
+    private var cancellables = Set<AnyCancellable>()
+    
+    init() {
+        setupBindings()
     }
     
-    func signOut(){
-        isAuthenticated = false
-        currentUser = nil
-        errorMessage = nil
-        playEntries = [] // Clear play entries on sign out
+    // MARK: - Setup
+    private func setupBindings() {
+        // Bind authentication service to app state
+        authenticationService.$isAuthenticated
+            .assign(to: \.isAuthenticated, on: self)
+            .store(in: &cancellables)
+        
+        authenticationService.$currentUser
+            .assign(to: \.currentUser, on: self)
+            .store(in: &cancellables)
+        
+        authenticationService.$errorMessage
+            .assign(to: \.errorMessage, on: self)
+            .store(in: &cancellables)
+    }
+    
+    // MARK: - Authentication
+    func signInWithApple() {
+        authenticationService.signInWithApple()
+    }
+    
+    func signInWithMock() {
+        authenticationService.signInWithMock()
+    }
+    
+    func signOut() {
+        authenticationService.signOut()
+        dataPersistenceService.playEntries = [] // Clear data on sign out
     }
     
     // MARK: - Play Entries Management
+    var playEntries: [PlayEntry] {
+        dataPersistenceService.playEntries
+    }
+    
     func addPlayEntry(_ entry: PlayEntry) {
-        playEntries.insert(entry, at: 0) // Add to beginning for newest first
+        dataPersistenceService.addPlayEntry(entry)
     }
     
     func deletePlayEntry(withId id: String) {
-        playEntries.removeAll { $0.id == id }
+        dataPersistenceService.deletePlayEntry(withId: id)
+    }
+    
+    func updatePlayEntry(_ entry: PlayEntry) {
+        dataPersistenceService.updatePlayEntry(entry)
     }
     
     // MARK: - Computed Properties
     var hasLoggedPlay: Bool {
-        !playEntries.isEmpty
+        dataPersistenceService.hasLoggedPlay
     }
     
     var totalPlayEntries: Int {
-        playEntries.count
+        dataPersistenceService.totalPlayEntries
     }
     
     var playEntriesByCategory: [PlayCategory: Int] {
-        Dictionary(grouping: playEntries, by: { $0.category })
-            .mapValues { $0.count }
+        dataPersistenceService.playEntriesByCategory
+    }
+    
+    var currentStreak: Int {
+        dataPersistenceService.currentStreak
+    }
+    
+    // MARK: - Data Export/Import
+    func exportPlayEntries() -> Data? {
+        dataPersistenceService.exportPlayEntries()
+    }
+    
+    func importPlayEntries(from data: Data) -> Bool {
+        dataPersistenceService.importPlayEntries(from: data)
     }
 }
 
